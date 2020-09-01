@@ -134,7 +134,7 @@ $(function () {
         if(power.includes("customerall")){
             $(".iframeBox").attr("src",url)
         }
-    })
+    })  
 
     async function init() {
         //判断当前用户有没有登陆
