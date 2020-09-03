@@ -1,4 +1,38 @@
 $(function(){
+
+    let userId = null;
+    //console.log(window.location.href)
+    let params = window.location.href.queryURLParams();
+    console.log(params)
+
+    //如果你点击编辑进到此页面，在params中是由id的
+    //如果你是直接点击了添加员工，进来的，params中是没有id的
+
+    if(params.hasOwnProperty("id")){
+        userId = params.id;
+        //根据ID获取用户的信息，实现数据的回显
+        getBaseInfo();
+    }
+    async function getBaseInfo(){
+        let result = await axios.get("/user/info",{
+            params:{userId}
+        })
+        if(result.code === 0){
+            result = result.data;
+            $(".username").val(result.name);
+            result.sex == 0 ? $("#man").prop('checked',true):$("#woman").prop('checked',true);
+            $(".useremail").val(result.email);
+            $(".userphone").val(result.phone);
+            $(".userdepartment").val(result.departmentId);
+            $(".userjob").val(result.jobId);
+            $(".userdesc").val(result.desc);
+            return;
+        }
+        alert("编辑不成功，可能是网络不给力")
+        userId = null;
+    }
+
+    //初始化部门和职务的数据
     initDeptAndJob();
     async function initDeptAndJob(){
         let departmentData = await queryDepart();
@@ -27,6 +61,7 @@ $(function(){
         }
     }
 
+    //校验函数
     function username(){
         let val = $(".username").val().trim();
         if(val.length === 0){
@@ -67,11 +102,13 @@ $(function(){
         return true;
     }
 
+    //失去焦点进行校验
     $(".username").blur(username);
     $(".useremail").blur(useremail);
     $(".userphone").blur(userphone);
 
 
+    //提交信息
     $(".submit").click(async function(){
         if(!username() || !useremail() ||!userphone()){
             alert("你填写的数据不合法，请填写合法数据！")
@@ -87,6 +124,19 @@ $(function(){
             desc:$(".userdesc").val().trim(),
         }
         //console.log(params)
+
+        if(userId){
+            params.userId = userId;
+            let result = await axios.post("/user/update",params)
+            if(result.code === 0){
+                alert("修改数据成功")
+                window.location.href = "userlist.html"
+                return;
+            }
+            alert("网络不给力，稍后再试~")
+            return;
+
+        }
 
         let result = await axios.post("/user/add",params)
         if(result.code === 0){
